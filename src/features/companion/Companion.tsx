@@ -1,28 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Season, Weather } from '../../services/worldService';
+import {
+  AMBIENT_LINES,
+  SEASON_LINES,
+  TAP_REACTION_LINES,
+  WEATHER_LINES,
+} from './dialogueLines';
 
-// Lines the companion says on its own, occasionally
-const AMBIENT_LINES = [
-  'Welcome back.',
-  'The breeze is gentle today.',
-  "It's good to see you again.",
-  'Rest is also part of growing.',
-];
-
-// Lines the companion says specifically when you tap it
-const TAP_REACTION_LINES = [
-  'Oh, hello there.',
-  'Have you eaten?',
-  "Let's do our best today.",
-  'The moon is nearly full.',
-];
-
-export default function Companion() {
+export default function Companion({ season, weather }: { season: Season; weather: Weather }) {
   const [eyesOpen, setEyesOpen] = useState(true);
   const [currentLine, setCurrentLine] = useState(AMBIENT_LINES[0]);
   const breathScale = useRef(new Animated.Value(1)).current;
   const bubbleOpacity = useRef(new Animated.Value(0)).current;
-  const ambientIndexRef = useRef(0);
 
   useEffect(() => {
     const blinkInterval = setInterval(() => {
@@ -53,12 +43,16 @@ export default function Companion() {
   };
 
   useEffect(() => {
+    // Every 18 seconds, say something drawn from a pool combining the
+    // general ambient lines with whatever's relevant to the current
+    // season and weather. Picked randomly, so it varies each time.
     const ambientInterval = setInterval(() => {
-      ambientIndexRef.current = (ambientIndexRef.current + 1) % AMBIENT_LINES.length;
-      showBubble(AMBIENT_LINES[ambientIndexRef.current]);
+      const pool = [...AMBIENT_LINES, ...SEASON_LINES[season], ...WEATHER_LINES[weather]];
+      const randomLine = pool[Math.floor(Math.random() * pool.length)];
+      showBubble(randomLine);
     }, 18000);
     return () => clearInterval(ambientInterval);
-  }, []);
+  }, [season, weather]);
 
   const handleTap = () => {
     const randomLine = TAP_REACTION_LINES[Math.floor(Math.random() * TAP_REACTION_LINES.length)];
@@ -84,10 +78,7 @@ export default function Companion() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  wrapper: { alignItems: 'center', justifyContent: 'center' },
   bubble: {
     position: 'absolute',
     top: '-60%',
@@ -97,11 +88,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     maxWidth: 260,
   },
-  bubbleText: {
-    color: '#3E3A34',
-    fontSize: 16,
-    textAlign: 'center',
-  },
+  bubbleText: { color: '#3E3A34', fontSize: 16, textAlign: 'center' },
   companion: {
     width: 160,
     height: 160,
@@ -110,17 +97,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  eyesRow: {
-    flexDirection: 'row',
-    gap: 24,
-  },
-  eye: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#3E3A34',
-  },
-  eyeClosed: {
-    height: 2,
-  },
+  eyesRow: { flexDirection: 'row', gap: 24 },
+  eye: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#3E3A34' },
+  eyeClosed: { height: 2 },
 });
