@@ -3,6 +3,7 @@ import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react
 import Companion from '../features/companion/Companion';
 import DevWorldPanel from '../features/home/DevWorldPanel';
 import Landscape from '../features/home/Landscape';
+import { useTodayDate } from '../hooks/useTodayDate';
 import {
   getCurrentSeason,
   getCurrentTimeOfDay,
@@ -18,6 +19,7 @@ export default function HomeScreen() {
   const [season, setSeason] = useState<Season>(getCurrentSeason());
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(getCurrentTimeOfDay());
   const [weather, setWeather] = useState<Weather>('sunny');
+  const todayDate = useTodayDate();
 
   const tasks = useTaskStore((state) => state.tasks);
   const incompleteTasks = tasks.filter((task) => !task.completed);
@@ -41,7 +43,7 @@ export default function HomeScreen() {
           <Text style={styles.emptyText}>Nothing left for today.</Text>
         ) : (
           incompleteTasks.map((task) => (
-            <Pressable key={task.id} onPress={() => toggleTask(task.id)} style={styles.taskRow}>
+            <Pressable key={task.id} onPress={() => toggleTask(task.id, todayDate)} style={styles.taskRow}>
               <View style={styles.checkbox} />
               <Text style={styles.taskText}>{task.title}</Text>
             </Pressable>

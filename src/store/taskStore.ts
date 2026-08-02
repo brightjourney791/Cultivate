@@ -6,13 +6,16 @@ export type Task = {
   id: string;
   title: string;
   completed: boolean;
+  repeatEveryDays: number | null; // null = one-time task
+  nextDueDate: string | null; // only meaningful once a repeating task is completed
 };
 
 type TaskStore = {
   tasks: Task[];
-  addTask: (title: string) => void;
-  toggleTask: (id: string) => void;
+  addTask: (title: string, repeatEveryDays: number | null) => void;
+  toggleTask: (id: string, todayDate: string) => void;
   deleteTask: (id: string) => void;
+  runDailyReset: (todayDate: string) => void;
 };
 
 export const useTaskStore = create<TaskStore>()(
@@ -20,26 +23,56 @@ export const useTaskStore = create<TaskStore>()(
     (set) => ({
       tasks: [],
 
-      addTask: (title) =>
+      addTask: (title, repeatEveryDays) =>
         set((state) => ({
-          tasks: [...state.tasks, { id: Date.now().toString(), title, completed: false }],
+          tasks: [
+            ...state.tasks,
+            { id: Date.now().toString(), title, completed: false, repeatEveryDays, nextDueDate: null },
+          ],
         })),
 
-      toggleTask: (id) =>
+      toggleTask: (id, todayDate) =>
         set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === id ? { ...task, completed: !task.completed } : task
-          ),
+          tasks: state.tasks.map((task) => {
+            if (task.id !== id) return task;
+            const willBeCompleted = !task.completed;
+
+            if (willBeCompleted && task.repeatEveryDays) {
+              // Completing a repeating task: schedule when it comes back
+              const next = new Date(todayDate + 'T00:00:00');
+              next.setDate(next.getDate() + task.repeatEveryDays);
+              return { ...task, completed: true, nextDueDate: next.toISOString().split('T')[0] };
+            }
+
+            return { ...task, completed: willBeCompleted };
+          }),
         })),
 
       deleteTask: (id) =>
+        set((state) => ({ tasks: state.tasks.filter((task) => task.id !== id) })),
+
+      // The nightly (3am) reset. Incomplete tasks are never touched.
+      // Completed one-time tasks are cleared out. Completed repeating
+      // tasks reset back to active once their nextDueDate arrives.
+      runDailyReset: (todayDate) =>
         set((state) => ({
-          tasks: state.tasks.filter((task) => task.id !== id),
+          tasks: state.tasks.reduce<Task[]>((result, task) => {
+            if (!task.completed) {
+              result.push(task);
+              return result;
+            }
+            if (!task.repeatEveryDays) {
+              return result; // one-time + completed → cleared
+            }
+            if (task.nextDueDate && task.nextDueDate <= todayDate) {
+              result.push({ ...task, completed: false, nextDueDate: null });
+            } else {
+              result.push(task); // repeating, completed, not due yet
+            }
+            return result;
+          }, []),
         })),
     }),
-    {
-      name: 'cultivate-tasks', // the "file name" this gets saved under on the device
-      storage: createJSONStorage(() => AsyncStorage),
-    }
+    { name: 'cultivate-tasks', storage: createJSONStorage(() => AsyncStorage) }
   )
 );
