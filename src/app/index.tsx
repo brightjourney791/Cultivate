@@ -13,7 +13,7 @@ import {
 } from '../services/worldService';
 import { useTaskStore } from '../store/taskStore';
 
-const WORLD_HEIGHT = Dimensions.get('window').height * 0.75;
+const WORLD_HEIGHT = Dimensions.get('window').height * 0.68;
 
 export default function HomeScreen() {
   const [season, setSeason] = useState<Season>(getCurrentSeason());
@@ -57,7 +57,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: '#F5F0E6' },
   scrollContent: { flexGrow: 1 },
-  worldSection: { position: 'relative' },
+  worldSection: { position: 'relative', overflow: 'hidden' },
   companionLayer: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',

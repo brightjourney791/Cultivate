@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { getCultivationDate } from '../services/dayService';
+import { useCultivationStore } from '../store/cultivationStore';
 import { useDevDayStore } from '../store/devDayStore';
 import { useTaskStore } from '../store/taskStore';
 
@@ -15,6 +16,7 @@ export function useTodayDate(): string {
 
   useEffect(() => {
     runDailyReset(todayDate);
+    useCultivationStore.getState().ensureStarted(todayDate);
   }, [todayDate]);
 
   return todayDate;
