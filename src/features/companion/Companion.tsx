@@ -61,7 +61,7 @@ export default function Companion({
       showBubble(randomLine);
     }, 18000);
     return () => clearInterval(ambientInterval);
-  }, [season, weather]);
+  }, [season, weather, timeOfDay]);
 
   const handleTap = () => {
     const randomLine = TAP_REACTION_LINES[Math.floor(Math.random() * TAP_REACTION_LINES.length)];

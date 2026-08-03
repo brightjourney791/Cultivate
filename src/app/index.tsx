@@ -7,6 +7,7 @@ import { useTodayDate } from '../hooks/useTodayDate';
 import {
   getCurrentSeason,
   getCurrentTimeOfDay,
+  pickRandomWeather,
   Season,
   TimeOfDay,
   Weather,
@@ -23,7 +24,14 @@ useEffect(() => {
   setSeason(getCurrentSeason(new Date(todayDate + 'T12:00:00')));
 }, [todayDate]);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(getCurrentTimeOfDay());
-  const [weather, setWeather] = useState<Weather>('sunny');
+  const [weather, setWeather] = useState<Weather>(() =>
+  pickRandomWeather(getCurrentSeason(new Date(todayDate + 'T12:00:00')))
+);
+
+useEffect(() => {
+  const currentSeason = getCurrentSeason(new Date(todayDate + 'T12:00:00'));
+  setWeather(pickRandomWeather(currentSeason));
+}, [todayDate]);
 
   const tasks = useTaskStore((state) => state.tasks);
   const incompleteTasks = tasks.filter((task) => !task.completed);
@@ -37,8 +45,15 @@ useEffect(() => {
           <Companion season={season} weather={weather} timeOfDay={timeOfDay} />
         </View>
         {__DEV__ && (
-          <DevWorldPanel onSelectSeason={setSeason} onSelectTime={setTimeOfDay} onSelectWeather={setWeather} />
-        )}
+  <DevWorldPanel
+    season={season}
+    timeOfDay={timeOfDay}
+    weather={weather}
+    onSelectSeason={setSeason}
+    onSelectTime={setTimeOfDay}
+    onSelectWeather={setWeather}
+  />
+)}
       </View>
 
       <View style={styles.taskSection}>

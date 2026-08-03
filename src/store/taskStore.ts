@@ -18,6 +18,7 @@ type TaskStore = {
   addTask: (title: string, repeatEveryDays: number | null) => void;
   toggleTask: (id: string, todayDate: string) => void;
   deleteTask: (id: string) => void;
+  updateTask: (id: string, title: string, repeatEveryDays: number | null) => void;
   runDailyReset: (todayDate: string) => void;
 };
 
@@ -52,6 +53,13 @@ export const useTaskStore = create<TaskStore>()(
 
       deleteTask: (id) =>
         set((state) => ({ tasks: state.tasks.filter((task) => task.id !== id) })),
+
+      updateTask: (id, title, repeatEveryDays) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === id ? { ...task, title, repeatEveryDays } : task
+          ),
+        })),
 
       // Runs once per real day-transition. Before touching anything,
       // it evaluates how the day that just ended went (were all tasks

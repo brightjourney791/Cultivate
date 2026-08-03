@@ -23,3 +23,53 @@ export function getCurrentTimeOfDay(date: Date = new Date()): TimeOfDay {
   return 'night';
 }
 export type Weather = 'sunny' | 'rain' | 'fog' | 'snow' | 'wind' | 'cloudy';
+type WeatherWeight = { weather: Weather; weight: number };
+
+// Each season only allows certain weather types — some combinations
+// (like snow in summer) are excluded entirely, not just made rare.
+// Within what's allowed, higher weight = more common.
+const WEATHER_TABLE: Record<Season, WeatherWeight[]> = {
+  spring: [
+    { weather: 'sunny', weight: 30 },
+    { weather: 'cloudy', weight: 25 },
+    { weather: 'rain', weight: 25 },
+    { weather: 'wind', weight: 15 },
+    { weather: 'fog', weight: 10 },
+    { weather: 'snow', weight: 3 },
+  ],
+  summer: [
+    { weather: 'sunny', weight: 40 },
+    { weather: 'cloudy', weight: 20 },
+    { weather: 'rain', weight: 15 },
+    { weather: 'wind', weight: 15 },
+    { weather: 'fog', weight: 10 },
+  ],
+  autumn: [
+    { weather: 'sunny', weight: 20 },
+    { weather: 'cloudy', weight: 25 },
+    { weather: 'rain', weight: 25 },
+    { weather: 'wind', weight: 15 },
+    { weather: 'fog', weight: 12 },
+    { weather: 'snow', weight: 3 },
+  ],
+  winter: [
+    { weather: 'sunny', weight: 20 },
+    { weather: 'cloudy', weight: 25 },
+    { weather: 'snow', weight: 25 },
+    { weather: 'wind', weight: 15 },
+    { weather: 'fog', weight: 15 },
+  ],
+};
+
+// Rolls a random weather for the given season, respecting the
+// weighted table above.
+export function pickRandomWeather(season: Season): Weather {
+  const options = WEATHER_TABLE[season];
+  const totalWeight = options.reduce((sum, o) => sum + o.weight, 0);
+  let roll = Math.random() * totalWeight;
+  for (const option of options) {
+    if (roll < option.weight) return option.weather;
+    roll -= option.weight;
+  }
+  return options[0].weather;
+}

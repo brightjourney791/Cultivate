@@ -23,12 +23,15 @@ const REPEAT_OPTIONS: { label: string; value: number | null }[] = [
 export default function TasksScreen() {
   const [inputText, setInputText] = useState('');
   const [repeatValue, setRepeatValue] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+  const [editRepeatValue, setEditRepeatValue] = useState<number | null>(null);
 
   const tasks = useTaskStore((state) => state.tasks);
   const addTask = useTaskStore((state) => state.addTask);
   const toggleTask = useTaskStore((state) => state.toggleTask);
   const deleteTask = useTaskStore((state) => state.deleteTask);
-  const runDailyReset = useTaskStore((state) => state.runDailyReset);
+  const updateTask = useTaskStore((state) => state.updateTask);
 
   const advanceDay = useDevDayStore((state) => state.advanceDay);
   const todayDate = useTodayDate();
@@ -39,6 +42,19 @@ export default function TasksScreen() {
     addTask(trimmed, repeatValue);
     setInputText('');
     setRepeatValue(null);
+  };
+
+  const startEditing = (id: string, title: string, repeatEveryDays: number | null) => {
+    setEditingId(id);
+    setEditText(title);
+    setEditRepeatValue(repeatEveryDays);
+  };
+
+  const saveEdit = () => {
+    const trimmed = editText.trim();
+    if (trimmed.length === 0 || !editingId) return;
+    updateTask(editingId, trimmed, editRepeatValue);
+    setEditingId(null);
   };
 
   return (
@@ -90,24 +106,64 @@ export default function TasksScreen() {
         {tasks.length === 0 ? (
           <Text style={styles.emptyText}>No tasks yet — add one above.</Text>
         ) : (
-          tasks.map((item) => (
-            <View key={item.id} style={styles.taskRow}>
-              <Pressable onPress={() => toggleTask(item.id, todayDate)} style={styles.taskMain}>
-                <View style={[styles.checkbox, item.completed && styles.checkboxChecked]} />
-                <View>
-                  <Text style={[styles.taskText, item.completed && styles.taskTextDone]}>{item.title}</Text>
-                  {item.repeatEveryDays && (
-                    <Text style={styles.repeatLabel}>
-                      {item.repeatEveryDays === 1 ? 'Repeats daily' : `Repeats every ${item.repeatEveryDays} days`}
-                    </Text>
-                  )}
+          tasks.map((item) => {
+            if (editingId === item.id) {
+              return (
+                <View key={item.id} style={styles.editCard}>
+                  <TextInput
+                    style={styles.input}
+                    value={editText}
+                    onChangeText={setEditText}
+                    onSubmitEditing={saveEdit}
+                    returnKeyType="done"
+                  />
+                  <View style={styles.repeatRow}>
+                    {REPEAT_OPTIONS.map((option) => (
+                      <Pressable
+                        key={option.label}
+                        onPress={() => setEditRepeatValue(option.value)}
+                        style={[styles.repeatChip, editRepeatValue === option.value && styles.repeatChipActive]}
+                      >
+                        <Text style={[styles.repeatChipText, editRepeatValue === option.value && styles.repeatChipTextActive]}>
+                          {option.label}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  <View style={styles.editButtonRow}>
+                    <Pressable onPress={saveEdit} style={styles.saveButton}>
+                      <Text style={styles.addButtonText}>Save</Text>
+                    </Pressable>
+                    <Pressable onPress={() => setEditingId(null)} style={styles.cancelButton}>
+                      <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </Pressable>
+                  </View>
                 </View>
-              </Pressable>
-              <Pressable onPress={() => deleteTask(item.id)} style={styles.deleteButton}>
-                <Text style={styles.deleteButtonText}>×</Text>
-              </Pressable>
-            </View>
-          ))
+              );
+            }
+
+            return (
+              <View key={item.id} style={styles.taskRow}>
+                <Pressable onPress={() => toggleTask(item.id, todayDate)} style={styles.taskMain}>
+                  <View style={[styles.checkbox, item.completed && styles.checkboxChecked]} />
+                  <View>
+                    <Text style={[styles.taskText, item.completed && styles.taskTextDone]}>{item.title}</Text>
+                    {item.repeatEveryDays && (
+                      <Text style={styles.repeatLabel}>
+                        {item.repeatEveryDays === 1 ? 'Repeats daily' : `Repeats every ${item.repeatEveryDays} days`}
+                      </Text>
+                    )}
+                  </View>
+                </Pressable>
+                <Pressable onPress={() => startEditing(item.id, item.title, item.repeatEveryDays)} style={styles.editButton}>
+                  <Text style={styles.editButtonText}>Edit</Text>
+                </Pressable>
+                <Pressable onPress={() => deleteTask(item.id)} style={styles.deleteButton}>
+                  <Text style={styles.deleteButtonText}>×</Text>
+                </Pressable>
+              </View>
+            );
+          })
         )}
       </ScrollView>
     </View>
@@ -136,14 +192,16 @@ const styles = StyleSheet.create({
   input: { flex: 1, backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, color: '#3E3A34' },
   addButton: { backgroundColor: '#A8C3A0', paddingHorizontal: 16, justifyContent: 'center', borderRadius: 12 },
   addButtonText: { color: '#3E3A34', fontWeight: '600' },
-  repeatRow: { flexDirection: 'row', gap: 8, marginBottom: 4 },
+  repeatRow: { flexDirection: 'row', gap: 8, marginBottom: 4, flexWrap: 'wrap' },
   repeatChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.6)' },
   repeatChipActive: { backgroundColor: '#A8C3A0' },
   repeatChipText: { color: '#5C5648', fontSize: 13 },
   repeatChipTextActive: { color: '#2C2A24', fontWeight: '600' },
   emptyText: { color: '#5C5648', textAlign: 'center', marginTop: 20 },
-  taskRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 14 },
+  taskRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 14, gap: 6 },
   taskMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  editButton: { paddingHorizontal: 8, paddingVertical: 4 },
+  editButtonText: { color: '#5C5648', fontSize: 13 },
   deleteButton: { paddingHorizontal: 8, paddingVertical: 4 },
   deleteButtonText: { color: '#B98346', fontSize: 20, fontWeight: '300' },
   checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 2, borderColor: '#A8C3A0' },
@@ -151,4 +209,9 @@ const styles = StyleSheet.create({
   taskText: { color: '#3E3A34', fontSize: 16 },
   taskTextDone: { textDecorationLine: 'line-through', color: '#9A9184' },
   repeatLabel: { color: '#8A8272', fontSize: 12, marginTop: 2 },
+  editCard: { backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 12, padding: 12, gap: 8 },
+  editButtonRow: { flexDirection: 'row', gap: 8 },
+  saveButton: { backgroundColor: '#A8C3A0', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
+  cancelButton: { backgroundColor: 'rgba(0,0,0,0.08)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
+  cancelButtonText: { color: '#5C5648', fontWeight: '600' },
 });
