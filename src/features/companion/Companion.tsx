@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Season, Weather } from '../../services/worldService';
+import { Season, TimeOfDay, Weather } from '../../services/worldService';
 import {
   AMBIENT_LINES,
   SEASON_LINES,
@@ -8,7 +8,15 @@ import {
   WEATHER_LINES,
 } from './dialogueLines';
 
-export default function Companion({ season, weather }: { season: Season; weather: Weather }) {
+export default function Companion({
+  season,
+  weather,
+  timeOfDay,
+}: {
+  season: Season;
+  weather: Weather;
+  timeOfDay: TimeOfDay;
+}) {
   const [eyesOpen, setEyesOpen] = useState(true);
   const [currentLine, setCurrentLine] = useState(AMBIENT_LINES[0]);
   const breathScale = useRef(new Animated.Value(1)).current;
@@ -47,7 +55,8 @@ export default function Companion({ season, weather }: { season: Season; weather
     // general ambient lines with whatever's relevant to the current
     // season and weather. Picked randomly, so it varies each time.
     const ambientInterval = setInterval(() => {
-      const pool = [...AMBIENT_LINES, ...SEASON_LINES[season], ...WEATHER_LINES[weather]];
+      const weatherLines = timeOfDay === 'night' ? WEATHER_LINES[weather].night : WEATHER_LINES[weather].day;
+      const pool = [...AMBIENT_LINES, ...SEASON_LINES[season], ...weatherLines];
       const randomLine = pool[Math.floor(Math.random() * pool.length)];
       showBubble(randomLine);
     }, 18000);

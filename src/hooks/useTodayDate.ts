@@ -14,10 +14,14 @@ export function useTodayDate(): string {
   simulatedDate.setDate(simulatedDate.getDate() + dayOffset);
   const todayDate = getCultivationDate(simulatedDate);
 
+  const hasHydrated = useCultivationStore((state) => state.hasHydrated);
+
   useEffect(() => {
     runDailyReset(todayDate);
-    useCultivationStore.getState().ensureStarted(todayDate);
-  }, [todayDate]);
+    if (hasHydrated) {
+      useCultivationStore.getState().ensureStarted(todayDate);
+    }
+  }, [todayDate, hasHydrated]);
 
   return todayDate;
 }

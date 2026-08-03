@@ -1,6 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { safeStorage } from '../services/safeStorage';
 
 export const FULL_DAY_POINTS = 10;
 export const PARTIAL_DAY_POINTS = 5;
@@ -17,6 +17,7 @@ export const REALMS = [
 type CultivationStore = {
   totalPoints: number;
   startDate: string | null;
+  hasHydrated: boolean;
   ensureStarted: (today: string) => void;
   addPoints: (amount: number) => void;
   awardDayCompletion: (tier: 'full' | 'partial') => void;
@@ -28,6 +29,7 @@ export const useCultivationStore = create<CultivationStore>()(
     (set) => ({
       totalPoints: 0,
       startDate: null,
+      hasHydrated: false,
 
       ensureStarted: (today) =>
         set((state) => (state.startDate ? {} : { startDate: today })),
@@ -42,7 +44,13 @@ export const useCultivationStore = create<CultivationStore>()(
 
       resetAll: () => set({ totalPoints: 0, startDate: null }),
     }),
-    { name: 'cultivate-cultivation', storage: createJSONStorage(() => AsyncStorage) }
+    {
+      name: 'cultivate-cultivation',
+      storage: createJSONStorage(() => safeStorage),
+      onRehydrateStorage: () => () => {
+        useCultivationStore.setState({ hasHydrated: true });
+      },
+    }
   )
 );
 

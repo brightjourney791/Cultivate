@@ -10,12 +10,16 @@ const summerDay = require('../../../assets/images/home/summer-day.png');
 const summerNight = require('../../../assets/images/home/summer-night.png');
 const springDay = require('../../../assets/images/home/spring-day.png');
 const springNight = require('../../../assets/images/home/spring-night.png');
+const autumnDay = require('../../../assets/images/home/autumn-day.png');
+const autumnNight = require('../../../assets/images/home/autumn-night.png');
+const winterDay = require('../../../assets/images/home/winter-day.png');
+const winterNight = require('../../../assets/images/home/winter-night.png');
 
 const SEASON_BACKGROUNDS: Record<Season, { day: any; night: any }> = {
   spring: { day: springDay, night: springNight },
   summer: { day: summerDay, night: summerNight },
-  autumn: { day: summerDay, night: summerNight },
-  winter: { day: summerDay, night: summerNight },
+  autumn: { day: autumnDay, night: autumnNight },
+  winter: { day: winterDay, night: winterNight },
 };
 
 // A translucent tint layered over the "day" image for morning/sunset.

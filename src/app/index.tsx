@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Companion from '../features/companion/Companion';
 import DevWorldPanel from '../features/home/DevWorldPanel';
@@ -16,10 +16,14 @@ import { useTaskStore } from '../store/taskStore';
 const WORLD_HEIGHT = Dimensions.get('window').height * 0.68;
 
 export default function HomeScreen() {
-  const [season, setSeason] = useState<Season>(getCurrentSeason());
+  const todayDate = useTodayDate();
+const [season, setSeason] = useState<Season>(getCurrentSeason(new Date(todayDate + 'T12:00:00')));
+
+useEffect(() => {
+  setSeason(getCurrentSeason(new Date(todayDate + 'T12:00:00')));
+}, [todayDate]);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(getCurrentTimeOfDay());
   const [weather, setWeather] = useState<Weather>('sunny');
-  const todayDate = useTodayDate();
 
   const tasks = useTaskStore((state) => state.tasks);
   const incompleteTasks = tasks.filter((task) => !task.completed);
@@ -30,7 +34,7 @@ export default function HomeScreen() {
       <View style={[styles.worldSection, { height: WORLD_HEIGHT }]}>
         <Landscape season={season} timeOfDay={timeOfDay} weather={weather} />
         <View style={styles.companionLayer}>
-          <Companion season={season} weather={weather} />
+          <Companion season={season} weather={weather} timeOfDay={timeOfDay} />
         </View>
         {__DEV__ && (
           <DevWorldPanel onSelectSeason={setSeason} onSelectTime={setTimeOfDay} onSelectWeather={setWeather} />

@@ -29,13 +29,31 @@ export const SEASON_LINES: Record<Season, string[]> = {
 };
 
 // Lines tied to the current weather. Same idea — just add strings.
-export const WEATHER_LINES: Record<Weather, string[]> = {
-  sunny: ['What a clear, sunny day.'],
-  rain: ['I love the sound of rain.'],
-  fog: ['The mist is thick this morning.'],
-  snow: ['Look how quietly the snow falls.'],
-  wind: ['Feel that breeze?'],
-  cloudy: ['A soft, cloudy day today.'],
+export const WEATHER_LINES: Record<Weather, { day: string[]; night: string[] }> = {
+  sunny: {
+    day: ['What a clear, sunny day.'],
+    night: ['The sky is wonderfully clear tonight.'],
+  },
+  rain: {
+    day: ['I love the sound of rain.'],
+    night: ['The rain sounds peaceful at night.'],
+  },
+  fog: {
+    day: ['The mist is thick this morning.'],
+    night: ['The fog makes the night feel even quieter.'],
+  },
+  snow: {
+    day: ['Look how quietly the snow falls.'],
+    night: ['The snow looks lovely under the moonlight.'],
+  },
+  wind: {
+    day: ['Feel that breeze?'],
+    night: ['The night breeze is gentle.'],
+  },
+  cloudy: {
+    day: ['A soft, cloudy day today.'],
+    night: ['The clouds are drifting quietly tonight.'],
+  },
 };
 
 // Lines said only in direct response to a tap.

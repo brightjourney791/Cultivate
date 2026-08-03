@@ -1,7 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { toDateString } from '../services/dayService';
+import { safeStorage } from '../services/safeStorage';
 import { useCultivationStore } from './cultivationStore';
 
 export type Task = {
@@ -92,6 +92,6 @@ export const useTaskStore = create<TaskStore>()(
           return { tasks: updatedTasks, lastResetDate: todayDate };
         }),
     }),
-    { name: 'cultivate-tasks', storage: createJSONStorage(() => AsyncStorage) }
+    { name: 'cultivate-tasks', storage: createJSONStorage(() => safeStorage) }
   )
 );
