@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { toDateString } from '../services/dayService';
+import { getPreviousDate, toDateString } from '../services/dayService';
 import { safeStorage } from '../services/safeStorage';
+import { useCalendarStore } from './calendarStore';
 import { useCultivationStore } from './cultivationStore';
 
 export type Task = {
@@ -74,10 +75,13 @@ export const useTaskStore = create<TaskStore>()(
 
           if (state.tasks.length > 0) {
             const completedCount = state.tasks.filter((t) => t.completed).length;
+            const completedDate = getPreviousDate(todayDate); // the day that just ended
             if (completedCount === state.tasks.length) {
               useCultivationStore.getState().awardDayCompletion('full');
+              useCalendarStore.getState().recordDay(completedDate, 'full');
             } else if (completedCount > 0) {
               useCultivationStore.getState().awardDayCompletion('partial');
+              useCalendarStore.getState().recordDay(completedDate, 'partial');
             }
           }
 

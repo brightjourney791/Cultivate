@@ -26,3 +26,16 @@ export function daysBetween(startDate: string, endDate: string): number {
   const msPerDay = 1000 * 60 * 60 * 24;
   return Math.round((end.getTime() - start.getTime()) / msPerDay);
 }
+export function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month + 1, 0).getDate();
+}
+
+export function getFirstWeekdayOfMonth(year: number, month: number): number {
+  return new Date(year, month, 1).getDay(); // 0 = Sunday
+}
+
+export function getPreviousDate(dateString: string): string {
+  const d = new Date(dateString + 'T00:00:00');
+  d.setDate(d.getDate() - 1);
+  return toDateString(d);
+}
