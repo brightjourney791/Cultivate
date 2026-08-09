@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Season, TimeOfDay, Weather } from '../../services/worldService';
 import {
   AMBIENT_LINES,
@@ -7,6 +7,9 @@ import {
   TAP_REACTION_LINES,
   WEATHER_LINES,
 } from './dialogueLines';
+
+const eyesOpenImage = require('../../../assets/images/companion/lantern_keeper_open.png');
+const eyesClosedImage = require('../../../assets/images/companion/lantern_keeper_closed.png');
 
 export default function Companion({
   season,
@@ -25,16 +28,16 @@ export default function Companion({
   useEffect(() => {
     const blinkInterval = setInterval(() => {
       setEyesOpen(false);
-      setTimeout(() => setEyesOpen(true), 200);
-    }, 3000);
+      setTimeout(() => setEyesOpen(true), 120);
+    }, 6000);
     return () => clearInterval(blinkInterval);
   }, []);
 
   useEffect(() => {
     const breathingLoop = Animated.loop(
       Animated.sequence([
-        Animated.timing(breathScale, { toValue: 1.04, duration: 2000, useNativeDriver: true }),
-        Animated.timing(breathScale, { toValue: 1, duration: 2000, useNativeDriver: true }),
+        Animated.timing(breathScale, { toValue: 1.02, duration: 3200, useNativeDriver: true }),
+        Animated.timing(breathScale, { toValue: 1, duration: 3200, useNativeDriver: true }),
       ])
     );
     breathingLoop.start();
@@ -51,9 +54,6 @@ export default function Companion({
   };
 
   useEffect(() => {
-    // Every 18 seconds, say something drawn from a pool combining the
-    // general ambient lines with whatever's relevant to the current
-    // season and weather. Picked randomly, so it varies each time.
     const ambientInterval = setInterval(() => {
       const weatherLines = timeOfDay === 'night' ? WEATHER_LINES[weather].night : WEATHER_LINES[weather].day;
       const pool = [...AMBIENT_LINES, ...SEASON_LINES[season], ...weatherLines];
@@ -76,37 +76,49 @@ export default function Companion({
 
       <Pressable onPress={handleTap}>
         <Animated.View style={[styles.companion, { transform: [{ scale: breathScale }] }]}>
-          <View style={styles.eyesRow}>
-            <View style={[styles.eye, !eyesOpen && styles.eyeClosed]} />
-            <View style={[styles.eye, !eyesOpen && styles.eyeClosed]} />
-          </View>
+          <Image
+            source={eyesOpenImage}
+            style={[styles.characterImage, { opacity: eyesOpen ? 1 : 0 }]}
+            resizeMode="contain"
+          />
+          <Image
+            source={eyesClosedImage}
+            style={[styles.characterImage, styles.overlayImage, { opacity: eyesOpen ? 0 : 1 }]}
+            resizeMode="contain"
+          />
         </Animated.View>
       </Pressable>
     </View>
   );
 }
 
+const CHARACTER_WIDTH = 190;
+const CHARACTER_ASPECT_RATIO = 766 / 1469; // width / height, from the source art
+
 const styles = StyleSheet.create({
   wrapper: { alignItems: 'center', justifyContent: 'center' },
   bubble: {
     position: 'absolute',
-    top: '-60%',
+    top: '-25%',
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 20,
     maxWidth: 260,
+    zIndex: 2,
   },
   bubbleText: { color: '#3E3A34', fontSize: 16, textAlign: 'center' },
   companion: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: '#A8C3A0',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: CHARACTER_WIDTH,
+    height: CHARACTER_WIDTH / CHARACTER_ASPECT_RATIO,
   },
-  eyesRow: { flexDirection: 'row', gap: 24 },
-  eye: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#3E3A34' },
-  eyeClosed: { height: 2 },
+  characterImage: {
+    width: '100%',
+    height: '100%',
+  },
+  overlayImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
 });

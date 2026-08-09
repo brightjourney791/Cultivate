@@ -10,6 +10,7 @@ const STAMP_ICONS = ['lantern', 'leaf', 'flower', 'moon', 'feather', 'bamboo'];
 type CalendarStore = {
   history: Record<string, DayRecord>;
   recordDay: (date: string, tier: DayTier) => void;
+  resetHistory: () => void;
 };
 
 export const useCalendarStore = create<CalendarStore>()(
@@ -28,6 +29,8 @@ export const useCalendarStore = create<CalendarStore>()(
             [date]: { tier, icon: STAMP_ICONS[Math.floor(Math.random() * STAMP_ICONS.length)] },
           },
         })),
+
+      resetHistory: () => set({ history: {} }),
     }),
     { name: 'cultivate-calendar', storage: createJSONStorage(() => safeStorage) }
   )

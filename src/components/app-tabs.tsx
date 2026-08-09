@@ -6,7 +6,8 @@ import {
   TabTrigger,
   TabTriggerSlotProps,
 } from 'expo-router/ui';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCultivationStore } from '../src/store/cultivationStore';
 
 const TAB_ROUTES = [
   { name: 'index', href: '/' },
@@ -33,10 +34,18 @@ export default function AppTabs() {
   );
 }
 
-function TabButton({ isFocused, ...props }: TabTriggerSlotProps) {
+function TabButton({ isFocused, name, ...props }: TabTriggerSlotProps & { name?: string }) {
+  const totalPoints = useCultivationStore((state) => state.totalPoints);
+  const showBadge = name === 'cultivation' && totalPoints > 0;
+
   return (
     <Pressable {...props} style={({ pressed }) => [styles.circleWrap, pressed && styles.pressed]}>
       <View style={[styles.circle, isFocused && styles.circleActive]} />
+      {showBadge && (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{totalPoints}</Text>
+        </View>
+      )}
     </Pressable>
   );
 }

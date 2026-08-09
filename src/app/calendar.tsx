@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import ScreenSignHeader from '../components/ScreenSignHeader';
 import { useTodayDate } from '../hooks/useTodayDate';
@@ -10,7 +10,6 @@ const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
-const todayDate = useTodayDate();
 
 const STAMP_IMAGES: Record<string, any> = {
   lantern: require('../../assets/images/calendar/stamps/lantern.png'),
@@ -22,8 +21,14 @@ const STAMP_IMAGES: Record<string, any> = {
 };
 
 export default function CalendarScreen() {
+  const todayDate = useTodayDate();
   const history = useCalendarStore((state) => state.history);
-  const [viewDate, setViewDate] = useState(new Date());
+  const resetHistory = useCalendarStore((state) => state.resetHistory);
+  const [viewDate, setViewDate] = useState(() => new Date(todayDate + 'T12:00:00'));
+
+  useEffect(() => {
+    setViewDate(new Date(todayDate + 'T12:00:00'));
+  }, [todayDate]);
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -88,6 +93,18 @@ export default function CalendarScreen() {
             );
           })}
         </View>
+
+        {__DEV__ && (
+          <Pressable
+            onPress={() => {
+              resetHistory();
+              setViewDate(new Date(todayDate + 'T12:00:00'));
+            }}
+            style={styles.devButton}
+          >
+            <Text style={styles.devButtonText}>Reset calendar (dev)</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );
@@ -98,7 +115,7 @@ const CELL_SIZE = '14.28%'; // 100% / 7 columns
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#EAE3D2' },
   background: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' },
-  container: { flex: 1, paddingTop: 170, paddingHorizontal: 16 },
+  container: { flex: 1, paddingTop: 85, paddingHorizontal: 16 },
   monthRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 14 },
   monthButton: { paddingHorizontal: 14, paddingVertical: 4 },
   monthButtonText: { fontSize: 22, color: '#3E3A34' },
@@ -126,4 +143,6 @@ const styles = StyleSheet.create({
   stampWrap: { position: 'absolute', top: '2%', left: '2%', right: '2%', bottom: '2%' },
   stampImage: { width: '100%', height: '100%' },
   stampTint: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 8 },
+  devButton: { backgroundColor: '#A8C3A0', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, alignSelf: 'center', marginTop: 16 },
+  devButtonText: { color: '#2C2A24', fontWeight: '600' },
 });

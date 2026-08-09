@@ -60,7 +60,7 @@ export default function TasksScreen() {
   return (
     <View style={styles.screen}>
       <Image source={require('../../assets/images/tasks/background.png')} style={styles.background} resizeMode="contain" />
-      <Image source={require('../../assets/images/tasks/lantern.png')} style={styles.lantern} resizeMode="contain" />
+      {/* <Image source={require('../../assets/images/tasks/lantern.png')} style={styles.lantern} resizeMode="contain" /> */}
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         <ScreenSignHeader title="Tasks" />

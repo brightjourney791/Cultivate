@@ -80,7 +80,8 @@ const styles = StyleSheet.create({
   companionLayer: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 10,
   },
   taskSection: { padding: 20, gap: 10 },
   taskSectionHeader: { fontSize: 20, fontWeight: '600', color: '#3E3A34', marginBottom: 4 },
