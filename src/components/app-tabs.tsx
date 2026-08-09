@@ -1,3 +1,4 @@
+import { useCultivationStore } from '@/store/cultivationStore';
 import {
   TabList,
   TabListProps,
@@ -7,7 +8,6 @@ import {
   TabTriggerSlotProps,
 } from 'expo-router/ui';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useCultivationStore } from '../src/store/cultivationStore';
 
 const TAB_ROUTES = [
   { name: 'index', href: '/' },
@@ -24,8 +24,8 @@ export default function AppTabs() {
       <TabList asChild>
         <CustomTabList>
           {TAB_ROUTES.map((route) => (
-            <TabTrigger key={route.name} name={route.name} href={route.href} asChild>
-              <TabButton />
+            <TabTrigger name="cultivation" href="/cultivation" asChild>
+              <TabButton name="cultivation">Cultivation</TabButton>
             </TabTrigger>
           ))}
         </CustomTabList>
@@ -34,18 +34,26 @@ export default function AppTabs() {
   );
 }
 
-function TabButton({ isFocused, name, ...props }: TabTriggerSlotProps & { name?: string }) {
+export function TabButton({ children, isFocused, name, ...props }: TabTriggerSlotProps & { name?: string }) {
   const totalPoints = useCultivationStore((state) => state.totalPoints);
   const showBadge = name === 'cultivation' && totalPoints > 0;
 
   return (
-    <Pressable {...props} style={({ pressed }) => [styles.circleWrap, pressed && styles.pressed]}>
-      <View style={[styles.circle, isFocused && styles.circleActive]} />
-      {showBadge && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{totalPoints}</Text>
-        </View>
-      )}
+    <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
+      <View style={{ position: 'relative' }}>
+        <ThemedView
+          type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
+          style={styles.tabButtonView}>
+          <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
+            {children}
+          </ThemedText>
+        </ThemedView>
+        {showBadge && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{totalPoints}</Text>
+          </View>
+        )}
+      </View>
     </Pressable>
   );
 }
@@ -80,4 +88,17 @@ const styles = StyleSheet.create({
   },
   circleActive: { backgroundColor: '#A8C3A0' },
   pressed: { opacity: 0.7 },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#B98346',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: { color: 'white', fontSize: 10, fontWeight: '700' },
 });
