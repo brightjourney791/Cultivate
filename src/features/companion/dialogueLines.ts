@@ -63,3 +63,10 @@ export const TAP_REACTION_LINES: string[] = [
   "Let's do our best today.",
   'The moon is nearly full.',
 ];
+export function getNameLines(name: string): string[] {
+  return [
+    `Hello ${name}, how are you today?`,
+    `${name}, it's good to see you.`,
+    `Welcome back, ${name}.`,
+  ];
+}

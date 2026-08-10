@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Season, TimeOfDay, Weather } from '../../services/worldService';
+import { useUserStore } from '../../store/userStore';
 import {
-  AMBIENT_LINES,
-  SEASON_LINES,
+  AMBIENT_LINES, getNameLines, SEASON_LINES,
   TAP_REACTION_LINES,
-  WEATHER_LINES,
+  WEATHER_LINES
 } from './dialogueLines';
 
 const eyesOpenImage = require('../../../assets/images/companion/lantern_keeper_open.png');
@@ -56,12 +56,13 @@ export default function Companion({
   useEffect(() => {
     const ambientInterval = setInterval(() => {
       const weatherLines = timeOfDay === 'night' ? WEATHER_LINES[weather].night : WEATHER_LINES[weather].day;
-      const pool = [...AMBIENT_LINES, ...SEASON_LINES[season], ...weatherLines];
+      const nameLines = userName ? getNameLines(userName) : [];
+      const pool = [...AMBIENT_LINES, ...SEASON_LINES[season], ...weatherLines, ...nameLines];
       const randomLine = pool[Math.floor(Math.random() * pool.length)];
       showBubble(randomLine);
     }, 18000);
     return () => clearInterval(ambientInterval);
-  }, [season, weather, timeOfDay]);
+  }, [season, weather, timeOfDay, userName]);
 
   const handleTap = () => {
     const randomLine = TAP_REACTION_LINES[Math.floor(Math.random() * TAP_REACTION_LINES.length)];
@@ -91,6 +92,7 @@ export default function Companion({
     </View>
   );
 }
+const userName = useUserStore((state) => state.name);
 
 const CHARACTER_WIDTH = 190;
 const CHARACTER_ASPECT_RATIO = 766 / 1469; // width / height, from the source art
