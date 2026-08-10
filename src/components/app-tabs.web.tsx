@@ -1,3 +1,4 @@
+import { useCultivationStore } from '@/store/cultivationStore';
 import {
   TabList,
   TabListProps,
@@ -6,12 +7,28 @@ import {
   TabTrigger,
   TabTriggerSlotProps,
 } from 'expo-router/ui';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
 import { MaxContentWidth, Spacing } from '@/constants/theme';
+
+const TAB_ROUTES = [
+  { name: 'index', href: '/', label: 'Home' },
+  { name: 'tasks', href: '/tasks', label: 'Tasks' },
+  { name: 'calendar', href: '/calendar', label: 'Calendar' },
+  { name: 'cultivation', href: '/cultivation', label: 'Cultivation' },
+  { name: 'memoryAlbum', href: '/memoryAlbum', label: 'Memories' },
+] as const;
+
+const TAB_ICONS: Record<string, any> = {
+  index: require('../../assets/images/tabIcons/home.png'),
+  tasks: require('../../assets/images/tabIcons/tasks.png'),
+  calendar: require('../../assets/images/tabIcons/calendar.png'),
+  cultivation: require('../../assets/images/tabIcons/cultivation.png'),
+  memoryAlbum: require('../../assets/images/tabIcons/memories.png'),
+};
 
 export default function AppTabs() {
   return (
@@ -19,42 +36,43 @@ export default function AppTabs() {
       <TabSlot style={{ height: '100%' }} />
       <TabList asChild>
         <CustomTabList>
-          <TabTrigger name="home" href="/" asChild>
-            <TabButton>Home</TabButton>
-          </TabTrigger>
-          <TabTrigger name="tasks" href="/tasks" asChild>
-            <TabButton>Tasks</TabButton>
-          </TabTrigger>
-          <TabTrigger name="calendar" href="/calendar" asChild>
-            <TabButton>Calendar</TabButton>
-          </TabTrigger>
-          <TabTrigger name="cultivation" href="/cultivation" asChild>
-            <TabButton>Cultivation</TabButton>
-          </TabTrigger>
-          <TabTrigger name="memoryAlbum" href="/memoryAlbum" asChild>
-            <TabButton>Memories</TabButton>
-          </TabTrigger>
+          {TAB_ROUTES.map((route) => (
+            <TabTrigger key={route.name} name={route.name} href={route.href} asChild>
+              <TabButton name={route.name}>{route.label}</TabButton>
+            </TabTrigger>
+          ))}
         </CustomTabList>
       </TabList>
     </Tabs>
   );
 }
 
-export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
+function TabButton({ children, isFocused, name, ...props }: TabTriggerSlotProps & { name?: string }) {
+  const totalPoints = useCultivationStore((state) => state.totalPoints);
+  const showBadge = name === 'cultivation' && totalPoints > 0;
+
   return (
     <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
-      <ThemedView
-        type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
-        style={styles.tabButtonView}>
-        <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
-          {children}
-        </ThemedText>
-      </ThemedView>
+      <View style={{ position: 'relative' }}>
+        <ThemedView
+          type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
+          style={styles.tabButtonView}>
+          {name && <Image source={TAB_ICONS[name]} style={styles.icon} resizeMode="contain" />}
+          <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
+            {children}
+          </ThemedText>
+        </ThemedView>
+        {showBadge && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{totalPoints}</Text>
+          </View>
+        )}
+      </View>
     </Pressable>
   );
 }
 
-export function CustomTabList(props: TabListProps) {
+function CustomTabList(props: TabListProps) {
   return (
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
@@ -87,15 +105,27 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     maxWidth: MaxContentWidth,
   },
-  brandText: {
-    marginRight: 'auto',
-  },
-  pressed: {
-    opacity: 0.7,
-  },
+  brandText: { marginRight: 'auto' },
+  pressed: { opacity: 0.7 },
   tabButtonView: {
     paddingVertical: Spacing.one,
     paddingHorizontal: Spacing.three,
     borderRadius: Spacing.three,
+    alignItems: 'center',
+    gap: 2,
   },
+  icon: { width: 20, height: 20 },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#B98346',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: { color: 'white', fontSize: 10, fontWeight: '700' },
 });
