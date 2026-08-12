@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useUserStore } from '../../store/userStore';
 
@@ -18,14 +18,18 @@ function OnboardingBackground({ children }: { children: React.ReactNode }) {
 export default function Onboarding() {
   const [step, setStep] = useState<'welcome' | 'name'>('welcome');
   const [nameInput, setNameInput] = useState('');
+  const inputRef = useRef<TextInput>(null);
   const setName = useUserStore((state) => state.setName);
   const completeOnboarding = useUserStore((state) => state.completeOnboarding);
 
   const handleFinish = () => {
     const trimmed = nameInput.trim();
     if (trimmed.length === 0) return;
-    setName(trimmed);
-    completeOnboarding();
+    inputRef.current?.blur();
+    setTimeout(() => {
+      setName(trimmed);
+      completeOnboarding();
+    }, 300);
   };
 
   if (step === 'welcome') {
@@ -50,6 +54,7 @@ export default function Onboarding() {
       >
         <Text style={styles.title}>What should we call you, cultivator?</Text>
         <TextInput
+          ref={inputRef}
           style={styles.input}
           placeholder="Enter your name..."
           placeholderTextColor="rgba(255,255,255,0.6)"
@@ -58,7 +63,7 @@ export default function Onboarding() {
           onSubmitEditing={handleFinish}
           returnKeyType="done"
         />
-        <Pressable onPress={handleFinish} style={styles.button}>
+        <Pressable onPress={() => { setName('Test'); completeOnboarding(); }} style={styles.button}>
           <Text style={styles.buttonText}>Next</Text>
         </Pressable>
       </KeyboardAvoidingView>

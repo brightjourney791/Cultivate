@@ -12,6 +12,7 @@ import ScreenSignHeader from '../components/ScreenSignHeader';
 import { useTodayDate } from '../hooks/useTodayDate';
 import { useDevDayStore } from '../store/devDayStore';
 import { useTaskStore } from '../store/taskStore';
+import { useUserStore } from '../store/userStore';
 
 const REPEAT_OPTIONS: { label: string; value: number | null }[] = [
   { label: 'None', value: null },
@@ -70,6 +71,9 @@ export default function TasksScreen() {
             <Text style={styles.devText}>Cultivation day: {todayDate}</Text>
             <Pressable onPress={advanceDay} style={styles.devButton}>
               <Text style={styles.devButtonText}>Skip to next day</Text>
+            </Pressable>
+            <Pressable onPress={() => useUserStore.getState().completeOnboarding()} style={styles.devButton}>
+              <Text style={styles.devButtonText}>Test: complete onboarding</Text>
             </Pressable>
           </View>
         )}
