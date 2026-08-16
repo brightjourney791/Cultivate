@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTodayDate } from '../hooks/useTodayDate';
 import { daysBetween } from '../services/dayService';
 import {
@@ -7,7 +6,6 @@ import {
   getNextRealm,
   useCultivationStore,
 } from '../store/cultivationStore';
-import { useUserStore } from '../store/userStore';
 
 const REALM_BACKGROUNDS: Record<string, any> = {
   'Beginning Path': require('../../assets/images/cultivation/beginning-path.png'),
@@ -28,11 +26,6 @@ export default function CultivationScreen() {
   const daysSinceStart = startDate ? daysBetween(startDate, todayDate) : 0;
   const currentRealm = getCurrentRealm(totalPoints, daysSinceStart);
   const nextRealm = getNextRealm(currentRealm.name);
-
-  const userName = useUserStore((state) => state.name);
-  const setName = useUserStore((state) => state.setName);
-  const [editingName, setEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState(userName ?? '');
 
   const handleResetAll = () => {
     resetAll();
@@ -58,38 +51,15 @@ export default function CultivationScreen() {
         )}
 
         {__DEV__ && (
-  <View style={styles.devRow}>
-    <Pressable onPress={() => addPoints(100)} style={styles.devButton}>
-      <Text style={styles.devButtonText}>+100 points (dev)</Text>
-    </Pressable>
-    <Pressable onPress={handleResetAll} style={styles.devButton}>
-      <Text style={styles.devButtonText}>Reset all (dev)</Text>
-    </Pressable>
-  </View>
-)}
-
-<View style={styles.nameRow}>
-  {editingName ? (
-    <>
-      <TextInput
-        style={styles.nameInput}
-        value={nameInput}
-        onChangeText={setNameInput}
-        onSubmitEditing={() => {
-          if (nameInput.trim()) setName(nameInput.trim());
-          setEditingName(false);
-        }}
-      />
-      <Pressable onPress={() => { if (nameInput.trim()) setName(nameInput.trim()); setEditingName(false); }}>
-        <Text style={styles.nameEditText}>Save</Text>
-      </Pressable>
-    </>
-  ) : (
-    <Pressable onPress={() => setEditingName(true)}>
-      <Text style={styles.nameEditText}>Playing as {userName} — tap to change</Text>
-    </Pressable>
-  )}
-</View>
+          <View style={styles.devRow}>
+            <Pressable onPress={() => addPoints(100)} style={styles.devButton}>
+              <Text style={styles.devButtonText}>+100 points (dev)</Text>
+            </Pressable>
+            <Pressable onPress={handleResetAll} style={styles.devButton}>
+              <Text style={styles.devButtonText}>Reset all (dev)</Text>
+            </Pressable>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -106,7 +76,4 @@ const styles = StyleSheet.create({
   devRow: { flexDirection: 'row', gap: 10, marginTop: 20 },
   devButton: { backgroundColor: '#A8C3A0', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
   devButtonText: { color: '#2C2A24', fontWeight: '600' },
-  nameRow: { marginTop: 10, backgroundColor: 'rgba(255,255,255,0.6)', borderRadius: 10, padding: 8 },
-  nameInput: { backgroundColor: 'white', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, marginBottom: 6 },
-  nameEditText: { fontSize: 12, color: '#3E3A34', textAlign: 'center' },
 });

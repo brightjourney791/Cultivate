@@ -20,6 +20,7 @@ export default function Companion({
   weather: Weather;
   timeOfDay: TimeOfDay;
 }) {
+  const userName = useUserStore((state) => state.name);
   const [eyesOpen, setEyesOpen] = useState(true);
   const [currentLine, setCurrentLine] = useState(AMBIENT_LINES[0]);
   const breathScale = useRef(new Animated.Value(1)).current;
@@ -92,7 +93,6 @@ export default function Companion({
     </View>
   );
 }
-const userName = useUserStore((state) => state.name);
 
 const CHARACTER_WIDTH = 190;
 const CHARACTER_ASPECT_RATIO = 766 / 1469; // width / height, from the source art

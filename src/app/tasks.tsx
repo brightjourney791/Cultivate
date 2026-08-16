@@ -72,8 +72,8 @@ export default function TasksScreen() {
             <Pressable onPress={advanceDay} style={styles.devButton}>
               <Text style={styles.devButtonText}>Skip to next day</Text>
             </Pressable>
-            <Pressable onPress={() => useUserStore.getState().completeOnboarding()} style={styles.devButton}>
-              <Text style={styles.devButtonText}>Test: complete onboarding</Text>
+            <Pressable onPress={() => useUserStore.getState().resetOnboarding()} style={styles.devButton}>
+              <Text style={styles.devButtonText}>Reset onboarding</Text>
             </Pressable>
           </View>
         )}

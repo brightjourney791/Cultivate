@@ -1,3 +1,4 @@
+import ProfileModal from '@/features/profile/ProfileModal';
 import { useCultivationStore } from '@/store/cultivationStore';
 import {
   TabList,
@@ -7,7 +8,8 @@ import {
   TabTrigger,
   TabTriggerSlotProps,
 } from 'expo-router/ui';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 const TAB_ROUTES = [
   { name: 'index', href: '/' },
@@ -25,7 +27,25 @@ const TAB_ICONS: Record<string, any> = {
   memoryAlbum: require('../../assets/images/tabIcons/memories.png'),
 };
 
+const lanternImage = require('../../assets/images/profile/lantern.png');
+const LANTERN_WIDTH = 90;
+const LANTERN_ASPECT_RATIO = 1024 / 1536; // width / height
+
 export default function AppTabs() {
+  const [profileOpen, setProfileOpen] = useState(false);
+  const swing = useRef(new Animated.Value(0)).current;
+
+  const handleLanternPress = () => {
+    swing.setValue(0);
+    Animated.sequence([
+      Animated.timing(swing, { toValue: 1, duration: 90, useNativeDriver: true }),
+      Animated.spring(swing, { toValue: 0, useNativeDriver: true, friction: 3, tension: 120 }),
+    ]).start();
+    setProfileOpen(true);
+  };
+
+  const rotate = swing.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '-12deg'] });
+
   return (
     <Tabs>
       <TabSlot style={{ height: '100%' }} />
@@ -38,6 +58,14 @@ export default function AppTabs() {
           ))}
         </CustomTabList>
       </TabList>
+
+      <Pressable onPress={handleLanternPress} style={styles.lanternButton}>
+        <Animated.View style={{ transform: [{ rotate }] }}>
+          <Image source={lanternImage} style={styles.lanternImage} resizeMode="contain" />
+        </Animated.View>
+      </Pressable>
+
+      <ProfileModal visible={profileOpen} onClose={() => setProfileOpen(false)} />
     </Tabs>
   );
 }
@@ -77,10 +105,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 50,
   },
-  innerContainer: {
-    flexDirection: 'row',
-    gap: 20,
-  },
+  innerContainer: { flexDirection: 'row', gap: 20 },
   circleWrap: { padding: 4 },
   circle: {
     width: 44,
@@ -106,4 +131,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: { color: 'white', fontSize: 10, fontWeight: '700' },
+  lanternButton: {
+    position: 'absolute',
+    top: 0,
+    right: 16,
+    zIndex: 10,
+  },
+  lanternImage: {
+    width: LANTERN_WIDTH,
+    height: LANTERN_WIDTH / LANTERN_ASPECT_RATIO,
+  },
 });

@@ -8,6 +8,7 @@ type UserStore = {
   hasHydrated: boolean;
   setName: (name: string) => void;
   completeOnboarding: () => void;
+  resetOnboarding: () => void;
 };
 
 export const useUserStore = create<UserStore>()(
@@ -18,6 +19,7 @@ export const useUserStore = create<UserStore>()(
       hasHydrated: false,
       setName: (name) => set({ name }),
       completeOnboarding: () => set({ hasOnboarded: true }),
+      resetOnboarding: () => set({ hasOnboarded: false, name: null }),
     }),
     {
       name: 'cultivate-user',
