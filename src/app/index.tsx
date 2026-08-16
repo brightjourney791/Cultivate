@@ -3,6 +3,7 @@ import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react
 import Companion from '../features/companion/Companion';
 import DevWorldPanel from '../features/home/DevWorldPanel';
 import Landscape from '../features/home/Landscape';
+import RainOverlay from '../features/home/RainOverlay';
 import { useTodayDate } from '../hooks/useTodayDate';
 import {
   getCurrentSeason,
@@ -46,6 +47,7 @@ export default function HomeScreen() {
           <View style={styles.companionLayer}>
             <Companion season={season} weather={weather} timeOfDay={timeOfDay} />
           </View>
+          {weather === 'rain' && <RainOverlay containerHeight={WORLD_HEIGHT} />}
           {__DEV__ && (
             <DevWorldPanel
               season={season}

@@ -63,7 +63,7 @@ export default function ProfileModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable onPress={(e) => e.stopPropagation()}>
+        <Pressable style={styles.innerPressable} onPress={(e) => e.stopPropagation()}>
           <Animated.View
             style={[styles.panel, { opacity, transform: [{ scale }, { translateY }] }]}
           >
@@ -138,6 +138,9 @@ const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.35)',
+  },
+  innerPressable: {
+    flex: 1,
   },
   panel: {
     flex: 1,

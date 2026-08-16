@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Season, TimeOfDay, Weather } from '../../services/worldService';
 import { useUserStore } from '../../store/userStore';
 import {
@@ -21,18 +21,38 @@ export default function Companion({
   timeOfDay: TimeOfDay;
 }) {
   const userName = useUserStore((state) => state.name);
-  const [eyesOpen, setEyesOpen] = useState(true);
   const [currentLine, setCurrentLine] = useState(AMBIENT_LINES[0]);
   const breathScale = useRef(new Animated.Value(1)).current;
   const bubbleOpacity = useRef(new Animated.Value(0)).current;
+  const eyesOpenOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    const blinkInterval = setInterval(() => {
-      setEyesOpen(false);
-      setTimeout(() => setEyesOpen(true), 120);
-    }, 6000);
-    return () => clearInterval(blinkInterval);
-  }, []);
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const doBlink = (thenDoubleBlink: boolean) => {
+      Animated.sequence([
+        Animated.timing(eyesOpenOpacity, { toValue: 0, duration: 70, useNativeDriver: true }),
+        Animated.delay(90),
+        Animated.timing(eyesOpenOpacity, { toValue: 1, duration: 70, useNativeDriver: true }),
+      ]).start(() => {
+        if (thenDoubleBlink) {
+          setTimeout(() => doBlink(false), 150);
+        }
+      });
+    };
+
+    const scheduleNextBlink = () => {
+      const nextDelay = 3000 + Math.random() * 4000; // random, 3-7 seconds
+      timeoutId = setTimeout(() => {
+        const isDoubleBlink = Math.random() < 0.15; // occasional double blink
+        doBlink(isDoubleBlink);
+        scheduleNextBlink();
+      }, nextDelay);
+    };
+
+    scheduleNextBlink();
+    return () => clearTimeout(timeoutId);
+  }, [eyesOpenOpacity]);
 
   useEffect(() => {
     const breathingLoop = Animated.loop(
@@ -78,14 +98,18 @@ export default function Companion({
 
       <Pressable onPress={handleTap}>
         <Animated.View style={[styles.companion, { transform: [{ scale: breathScale }] }]}>
-          <Image
+          <Animated.Image
             source={eyesOpenImage}
-            style={[styles.characterImage, { opacity: eyesOpen ? 1 : 0 }]}
+            style={[styles.characterImage, { opacity: eyesOpenOpacity }]}
             resizeMode="contain"
           />
-          <Image
+          <Animated.Image
             source={eyesClosedImage}
-            style={[styles.characterImage, styles.overlayImage, { opacity: eyesOpen ? 0 : 1 }]}
+            style={[
+              styles.characterImage,
+              styles.overlayImage,
+              { opacity: eyesOpenOpacity.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) },
+            ]}
             resizeMode="contain"
           />
         </Animated.View>
