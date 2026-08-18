@@ -103,17 +103,16 @@ export default function ProfileModal({
 
               <View style={styles.divider} />
 
-              <Text style={styles.sectionLabel}>Companion</Text>
-              <View style={styles.companionRow}>
-                                <View style={styles.companionCard}>
-                  <View style={styles.companionImageWrapper}>
-                    <CompanionFace config={COMPANIONS.lanternKeeper} width={54} />
+                            <Text style={styles.sectionLabel}>Companion</Text>
+              <View style={styles.companionGrid}>
+                {Object.values(COMPANIONS).map((companion) => (
+                  <View key={companion.id} style={styles.companionCard}>
+                    <View style={styles.companionImageWrapper}>
+                      <CompanionFace config={companion} width={54} />
+                    </View>
+                    <Text style={styles.companionName}>{companion.name}</Text>
                   </View>
-                  <Text style={styles.companionName}>Lantern Keeper</Text>
-                </View>
-                <View style={[styles.companionCard, styles.companionCardLocked]}>
-                  <Text style={styles.lockedText}>More companions{'\n'}coming soon</Text>
-                </View>
+                ))}
               </View>
 
               <View style={styles.divider} />
@@ -175,7 +174,7 @@ const styles = StyleSheet.create({
   saveButtonText: { color: '#2C2A24', fontWeight: '600' },
   statLine: { fontSize: 12, color: '#5C5648', marginTop: 2 },
   divider: { height: 1, backgroundColor: 'rgba(0,0,0,0.1)', marginVertical: 14 },
-  companionRow: { flexDirection: 'row', gap: 12 },
+    companionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   companionCard: { width: 110, backgroundColor: 'rgba(255,255,255,0.55)', borderRadius: 14, padding: 10, alignItems: 'center', gap: 6 },
   companionCardLocked: { justifyContent: 'center', minHeight: 100 },
   companionImageWrapper: { width: '100%', height: 80, alignItems: 'center', justifyContent: 'center' },
