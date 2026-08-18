@@ -2,16 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Season, TimeOfDay, Weather } from '../../services/worldService';
 import { useUserStore } from '../../store/userStore';
+import { COMPANIONS, getCompanionLayout } from './companionAssets';
 import {
   AMBIENT_LINES, getNameLines, SEASON_LINES,
   TAP_REACTION_LINES,
   WEATHER_LINES
 } from './dialogueLines';
 
-const bodyImage = require('../../../assets/images/companion/lantern_keeper_body_blank.png');
-const eyesOpenImage = require('../../../assets/images/companion/lantern_keeper_eyes_open.png');
-const eyesClosedSoftImage = require('../../../assets/images/companion/lantern_keeper_eyes_closed_soft.png');
-const eyesSurprisedImage = require('../../../assets/images/companion/lantern_keeper_eyes_surprised.png');
+const CHARACTER_WIDTH = 190;
+const config = COMPANIONS.lanternKeeper;
+const layout = getCompanionLayout(config, CHARACTER_WIDTH);
 
 export default function Companion({
   season,
@@ -29,6 +29,15 @@ export default function Companion({
 
   const blinkProgress = useRef(new Animated.Value(0)).current; // 0 = open, 1 = closed
   const surprisedOpacity = useRef(new Animated.Value(0)).current;
+
+  // While the surprised expression is showing, fade the base open/blink
+  // layer out underneath it, so they never stack into "four eyes."
+  const baseVisible = surprisedOpacity.interpolate({ inputRange: [0, 1], outputRange: [1, 0] });
+  const openEyesOpacity = Animated.multiply(
+    baseVisible,
+    blinkProgress.interpolate({ inputRange: [0, 1], outputRange: [1, 0] })
+  );
+  const closedSoftOpacity = Animated.multiply(baseVisible, blinkProgress);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -106,25 +115,26 @@ export default function Companion({
       </Animated.View>
 
       <Pressable onPress={handleTap}>
-        <Animated.View style={[styles.companion, { transform: [{ scale: breathScale }] }]}>
-          <Animated.Image source={bodyImage} style={styles.bodyImage} resizeMode="contain" />
+        <Animated.View
+          style={[
+            { width: layout.width, height: layout.height, overflow: 'hidden' },
+            { transform: [{ scale: breathScale }] },
+          ]}
+        >
+          <Animated.Image source={config.bodyImage} style={styles.bodyImage} resizeMode="contain" />
 
-                    <Animated.Image
-            source={eyesOpenImage}
-            style={[
-              styles.eyesImage,
-              { opacity: blinkProgress.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) },
-            ]}
+          <Animated.Image
+            source={config.eyes.open}
+            style={[styles.eyesImage, { opacity: openEyesOpacity }]}
             resizeMode="contain"
           />
           <Animated.Image
-            source={eyesClosedSoftImage}
-            style={[styles.eyesImage, { opacity: blinkProgress }]}
+            source={config.eyes.closedSoft}
+            style={[styles.eyesImage, { opacity: closedSoftOpacity }]}
             resizeMode="contain"
           />
-
           <Animated.Image
-            source={eyesSurprisedImage}
+            source={config.eyes.surprised}
             style={[styles.eyesImage, { opacity: surprisedOpacity }]}
             resizeMode="contain"
           />
@@ -133,17 +143,6 @@ export default function Companion({
     </View>
   );
 }
-
-const CHARACTER_WIDTH = 190;
-const CHARACTER_ASPECT_RATIO = 1024 / 1536; // body image width / height
-
-// Placement for the new isolated-feature expressions (closed_soft,
-// closed_happy, surprised, relaxed) — all four share this exact box
-// since they were cropped identically.
-const EYES_WIDTH_PCT = 300 / 1024;
-const EYES_LEFT_PCT = 362 / 1024;
-const EYES_TOP_PCT = 250 / 1536;
-const EYES_ASPECT_RATIO = 620 / 465;
 
 const styles = StyleSheet.create({
   wrapper: { alignItems: 'center', justifyContent: 'center' },
@@ -158,19 +157,15 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   bubbleText: { color: '#3E3A34', fontSize: 16, textAlign: 'center' },
-  companion: {
-    width: CHARACTER_WIDTH,
-    height: CHARACTER_WIDTH / CHARACTER_ASPECT_RATIO,
-  },
   bodyImage: {
     width: '100%',
     height: '100%',
   },
   eyesImage: {
     position: 'absolute',
-    width: `${EYES_WIDTH_PCT * 100}%`,
-    left: `${EYES_LEFT_PCT * 100}%`,
-    top: `${EYES_TOP_PCT * 100}%`,
-    aspectRatio: EYES_ASPECT_RATIO,
+    width: layout.eyesWidth,
+    height: layout.eyesHeight,
+    left: layout.eyesLeft,
+    top: layout.eyesTop,
   },
 });

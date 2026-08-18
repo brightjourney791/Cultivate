@@ -14,10 +14,10 @@ import { useTodayDate } from '../../hooks/useTodayDate';
 import { daysBetween } from '../../services/dayService';
 import { getCurrentRealm, useCultivationStore } from '../../store/cultivationStore';
 import { useUserStore } from '../../store/userStore';
+import CompanionFace from '../companion/CompanionFace';
+import { COMPANIONS } from '../companion/companionAssets';
 
 const backgroundImage = require('../../../assets/images/profile/background.png');
-const lanternKeeperBodyImage = require('../../../assets/images/companion/lantern_keeper_body_blank.png');
-const lanternKeeperEyesImage = require('../../../assets/images/companion/lantern_keeper_eyes_open.png');
 
 export default function ProfileModal({
   visible,
@@ -107,8 +107,7 @@ export default function ProfileModal({
               <View style={styles.companionRow}>
                                 <View style={styles.companionCard}>
                   <View style={styles.companionImageWrapper}>
-                    <Image source={lanternKeeperBodyImage} style={styles.companionImage} resizeMode="contain" />
-                    <Image source={lanternKeeperEyesImage} style={styles.companionEyesImage} resizeMode="contain" />
+                    <CompanionFace config={COMPANIONS.lanternKeeper} width={54} />
                   </View>
                   <Text style={styles.companionName}>Lantern Keeper</Text>
                 </View>
@@ -179,15 +178,7 @@ const styles = StyleSheet.create({
   companionRow: { flexDirection: 'row', gap: 12 },
   companionCard: { width: 110, backgroundColor: 'rgba(255,255,255,0.55)', borderRadius: 14, padding: 10, alignItems: 'center', gap: 6 },
   companionCardLocked: { justifyContent: 'center', minHeight: 100 },
-  companionImageWrapper: { width: '100%', height: 80 },
-  companionImage: { width: '100%', height: '100%' },
-  companionEyesImage: {
-    position: 'absolute',
-    width: '33%',
-    left: '33%',
-    top: '16%',
-    aspectRatio: 620 / 465,
-  },
+  companionImageWrapper: { width: '100%', height: 80, alignItems: 'center', justifyContent: 'center' },
   companionName: { fontSize: 12, fontWeight: '600', color: '#3E3A34', textAlign: 'center' },
   lockedText: { fontSize: 11, color: '#9A9184', textAlign: 'center' },
   infoLine: { fontSize: 12, color: '#5C5648' },
