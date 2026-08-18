@@ -8,8 +8,10 @@ import {
   WEATHER_LINES
 } from './dialogueLines';
 
-const eyesOpenImage = require('../../../assets/images/companion/lantern_keeper_open.png');
-const eyesClosedImage = require('../../../assets/images/companion/lantern_keeper_closed.png');
+const bodyImage = require('../../../assets/images/companion/lantern_keeper_body_blank.png');
+const eyesOpenImage = require('../../../assets/images/companion/lantern_keeper_eyes_open.png');
+const eyesClosedSoftImage = require('../../../assets/images/companion/lantern_keeper_eyes_closed_soft.png');
+const eyesSurprisedImage = require('../../../assets/images/companion/lantern_keeper_eyes_surprised.png');
 
 export default function Companion({
   season,
@@ -24,16 +26,18 @@ export default function Companion({
   const [currentLine, setCurrentLine] = useState(AMBIENT_LINES[0]);
   const breathScale = useRef(new Animated.Value(1)).current;
   const bubbleOpacity = useRef(new Animated.Value(0)).current;
-  const eyesOpenOpacity = useRef(new Animated.Value(1)).current;
+
+  const blinkProgress = useRef(new Animated.Value(0)).current; // 0 = open, 1 = closed
+  const surprisedOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
 
     const doBlink = (thenDoubleBlink: boolean) => {
       Animated.sequence([
-        Animated.timing(eyesOpenOpacity, { toValue: 0, duration: 70, useNativeDriver: true }),
+        Animated.timing(blinkProgress, { toValue: 1, duration: 70, useNativeDriver: true }),
         Animated.delay(90),
-        Animated.timing(eyesOpenOpacity, { toValue: 1, duration: 70, useNativeDriver: true }),
+        Animated.timing(blinkProgress, { toValue: 0, duration: 70, useNativeDriver: true }),
       ]).start(() => {
         if (thenDoubleBlink) {
           setTimeout(() => doBlink(false), 150);
@@ -42,9 +46,9 @@ export default function Companion({
     };
 
     const scheduleNextBlink = () => {
-      const nextDelay = 3000 + Math.random() * 4000; // random, 3-7 seconds
+      const nextDelay = 3000 + Math.random() * 4000;
       timeoutId = setTimeout(() => {
-        const isDoubleBlink = Math.random() < 0.15; // occasional double blink
+        const isDoubleBlink = Math.random() < 0.15;
         doBlink(isDoubleBlink);
         scheduleNextBlink();
       }, nextDelay);
@@ -52,7 +56,7 @@ export default function Companion({
 
     scheduleNextBlink();
     return () => clearTimeout(timeoutId);
-  }, [eyesOpenOpacity]);
+  }, [blinkProgress]);
 
   useEffect(() => {
     const breathingLoop = Animated.loop(
@@ -68,7 +72,6 @@ export default function Companion({
   const showBubble = (text: string) => {
     setCurrentLine(text);
     Animated.timing(bubbleOpacity, { toValue: 1, duration: 500, useNativeDriver: true }).start();
-
     setTimeout(() => {
       Animated.timing(bubbleOpacity, { toValue: 0, duration: 500, useNativeDriver: true }).start();
     }, 4000);
@@ -88,6 +91,12 @@ export default function Companion({
   const handleTap = () => {
     const randomLine = TAP_REACTION_LINES[Math.floor(Math.random() * TAP_REACTION_LINES.length)];
     showBubble(randomLine);
+
+    Animated.sequence([
+      Animated.timing(surprisedOpacity, { toValue: 1, duration: 90, useNativeDriver: true }),
+      Animated.delay(500),
+      Animated.timing(surprisedOpacity, { toValue: 0, duration: 200, useNativeDriver: true }),
+    ]).start();
   };
 
   return (
@@ -98,18 +107,25 @@ export default function Companion({
 
       <Pressable onPress={handleTap}>
         <Animated.View style={[styles.companion, { transform: [{ scale: breathScale }] }]}>
-          <Animated.Image
+          <Animated.Image source={bodyImage} style={styles.bodyImage} resizeMode="contain" />
+
+                    <Animated.Image
             source={eyesOpenImage}
-            style={[styles.characterImage, { opacity: eyesOpenOpacity }]}
+            style={[
+              styles.eyesImage,
+              { opacity: blinkProgress.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) },
+            ]}
             resizeMode="contain"
           />
           <Animated.Image
-            source={eyesClosedImage}
-            style={[
-              styles.characterImage,
-              styles.overlayImage,
-              { opacity: eyesOpenOpacity.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) },
-            ]}
+            source={eyesClosedSoftImage}
+            style={[styles.eyesImage, { opacity: blinkProgress }]}
+            resizeMode="contain"
+          />
+
+          <Animated.Image
+            source={eyesSurprisedImage}
+            style={[styles.eyesImage, { opacity: surprisedOpacity }]}
             resizeMode="contain"
           />
         </Animated.View>
@@ -119,7 +135,15 @@ export default function Companion({
 }
 
 const CHARACTER_WIDTH = 190;
-const CHARACTER_ASPECT_RATIO = 766 / 1469; // width / height, from the source art
+const CHARACTER_ASPECT_RATIO = 1024 / 1536; // body image width / height
+
+// Placement for the new isolated-feature expressions (closed_soft,
+// closed_happy, surprised, relaxed) — all four share this exact box
+// since they were cropped identically.
+const EYES_WIDTH_PCT = 300 / 1024;
+const EYES_LEFT_PCT = 362 / 1024;
+const EYES_TOP_PCT = 250 / 1536;
+const EYES_ASPECT_RATIO = 620 / 465;
 
 const styles = StyleSheet.create({
   wrapper: { alignItems: 'center', justifyContent: 'center' },
@@ -138,13 +162,15 @@ const styles = StyleSheet.create({
     width: CHARACTER_WIDTH,
     height: CHARACTER_WIDTH / CHARACTER_ASPECT_RATIO,
   },
-  characterImage: {
+  bodyImage: {
     width: '100%',
     height: '100%',
   },
-  overlayImage: {
+  eyesImage: {
     position: 'absolute',
-    top: 0,
-    left: 0,
+    width: `${EYES_WIDTH_PCT * 100}%`,
+    left: `${EYES_LEFT_PCT * 100}%`,
+    top: `${EYES_TOP_PCT * 100}%`,
+    aspectRatio: EYES_ASPECT_RATIO,
   },
 });

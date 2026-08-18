@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    Image,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Animated,
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import { useTodayDate } from '../../hooks/useTodayDate';
 import { daysBetween } from '../../services/dayService';
@@ -16,7 +16,8 @@ import { getCurrentRealm, useCultivationStore } from '../../store/cultivationSto
 import { useUserStore } from '../../store/userStore';
 
 const backgroundImage = require('../../../assets/images/profile/background.png');
-const lanternKeeperImage = require('../../../assets/images/companion/lantern_keeper_open.png');
+const lanternKeeperBodyImage = require('../../../assets/images/companion/lantern_keeper_body_blank.png');
+const lanternKeeperEyesImage = require('../../../assets/images/companion/lantern_keeper_eyes_open.png');
 
 export default function ProfileModal({
   visible,
@@ -104,8 +105,11 @@ export default function ProfileModal({
 
               <Text style={styles.sectionLabel}>Companion</Text>
               <View style={styles.companionRow}>
-                <View style={styles.companionCard}>
-                  <Image source={lanternKeeperImage} style={styles.companionImage} resizeMode="contain" />
+                                <View style={styles.companionCard}>
+                  <View style={styles.companionImageWrapper}>
+                    <Image source={lanternKeeperBodyImage} style={styles.companionImage} resizeMode="contain" />
+                    <Image source={lanternKeeperEyesImage} style={styles.companionEyesImage} resizeMode="contain" />
+                  </View>
                   <Text style={styles.companionName}>Lantern Keeper</Text>
                 </View>
                 <View style={[styles.companionCard, styles.companionCardLocked]}>
@@ -175,7 +179,15 @@ const styles = StyleSheet.create({
   companionRow: { flexDirection: 'row', gap: 12 },
   companionCard: { width: 110, backgroundColor: 'rgba(255,255,255,0.55)', borderRadius: 14, padding: 10, alignItems: 'center', gap: 6 },
   companionCardLocked: { justifyContent: 'center', minHeight: 100 },
-  companionImage: { width: '100%', height: 80 },
+  companionImageWrapper: { width: '100%', height: 80 },
+  companionImage: { width: '100%', height: '100%' },
+  companionEyesImage: {
+    position: 'absolute',
+    width: '33%',
+    left: '33%',
+    top: '16%',
+    aspectRatio: 620 / 465,
+  },
   companionName: { fontSize: 12, fontWeight: '600', color: '#3E3A34', textAlign: 'center' },
   lockedText: { fontSize: 11, color: '#9A9184', textAlign: 'center' },
   infoLine: { fontSize: 12, color: '#5C5648' },
