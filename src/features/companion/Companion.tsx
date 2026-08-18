@@ -12,6 +12,7 @@ import {
 const CHARACTER_WIDTH = 190;
 const config = COMPANIONS.lanternKeeper;
 const layout = getCompanionLayout(config, CHARACTER_WIDTH);
+const eyes = config.eyes!; // Lantern Keeper always has eyes art, so this is safe
 
 export default function Companion({
   season,
@@ -123,18 +124,18 @@ export default function Companion({
         >
           <Animated.Image source={config.bodyImage} style={styles.bodyImage} resizeMode="contain" />
 
-          <Animated.Image
-            source={config.eyes.open}
+                    <Animated.Image
+            source={eyes.open}
             style={[styles.eyesImage, { opacity: openEyesOpacity }]}
             resizeMode="contain"
           />
           <Animated.Image
-            source={config.eyes.closedSoft}
+            source={eyes.closedSoft}
             style={[styles.eyesImage, { opacity: closedSoftOpacity }]}
             resizeMode="contain"
           />
           <Animated.Image
-            source={config.eyes.surprised}
+            source={eyes.surprised}
             style={[styles.eyesImage, { opacity: surprisedOpacity }]}
             resizeMode="contain"
           />
